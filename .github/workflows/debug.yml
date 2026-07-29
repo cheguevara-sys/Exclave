@@ -22,10 +22,6 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
-      # ─── REMOVED: Set up Android SDK ───
-      # The runner already has Android SDK pre-installed.
-      # No need to install it again.
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -39,7 +35,10 @@ jobs:
           echo "$GITHUB_WORKSPACE/android-ndk-r25c" >> $GITHUB_PATH
 
       - name: Accept Android licenses
-        run: yes | sdkmanager --licenses
+        run: |
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+          yes | sdkmanager --licenses
 
       - name: Make gradlew executable
         run: chmod +x gradlew
