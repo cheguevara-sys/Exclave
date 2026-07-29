@@ -2,7 +2,7 @@ name: Guevarah VPN Debug Build
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, dev ]
   workflow_dispatch:
 
 jobs:
@@ -21,6 +21,10 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
           cache: 'gradle'
+
+      # ─── NEW: Set up Android SDK (fixes sdkmanager not found) ───
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
       - name: Set up Go
         uses: actions/setup-go@v5
