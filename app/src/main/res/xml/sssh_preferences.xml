@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Existing SSH settings will be here -->
+
+    <!-- New: Payload Injection -->
+    <SwitchPreference
+        android:key="pref_use_payload"
+        android:title="Use Payload"
+        android:summary="Enable custom HTTP payload injection" />
+
+    <EditTextPreference
+        android:key="pref_payload"
+        android:title="Payload Template"
+        android:summary="Custom HTTP headers to inject"
+        android:dialogTitle="Enter Payload"
+        android:defaultValue="GET / HTTP/1.1[crlf]Host: [host][crlf][crlf]" />
+
+    <!-- New: Remote Proxy -->
+    <EditTextPreference
+        android:key="pref_remote_proxy"
+        android:title="Remote Proxy"
+        android:summary="Forward through remote proxy (e.g., viton.com)"
+        android:dialogTitle="Enter Remote Proxy"
+        android:defaultValue="" />
+
+    <EditTextPreference
+        android:key="pref_remote_proxy_port"
+        android:title="Remote Proxy Port"
+        android:summary="Port of the remote proxy"
+        android:dialogTitle="Enter Remote Proxy Port"
+        android:defaultValue="80" />
+
+</PreferenceScreen>
