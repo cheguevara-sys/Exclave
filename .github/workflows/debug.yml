@@ -34,11 +34,8 @@ jobs:
           echo "ANDROID_NDK_HOME=$GITHUB_WORKSPACE/android-ndk-r25c" >> $GITHUB_ENV
           echo "$GITHUB_WORKSPACE/android-ndk-r25c" >> $GITHUB_PATH
 
-      - name: Accept Android licenses
-        run: |
-          export ANDROID_HOME=/usr/local/lib/android/sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-          yes | sdkmanager --licenses
+      # ─── REMOVED: Accept Android licenses ───
+      # The runner's SDK already has licenses accepted.
 
       - name: Make gradlew executable
         run: chmod +x gradlew
