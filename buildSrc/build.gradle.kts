@@ -1,13 +1,23 @@
 plugins {
-    `java-gradle-plugin`
-    `kotlin-dsl`
+    id("java-gradle-plugin")
+    id("kotlin-dsl")
 }
 
-apply(from = "../repositories.gradle.kts")
+repositories {
+    google()
+    mavenCentral()
+}
 
 dependencies {
-    implementation(libs.android.gradle.plugin)
-    implementation(libs.kotlin.gradle.plugin)
-    implementation(libs.github.api)
-    implementation(libs.okhttp)
+    implementation("com.android.tools.build:gradle:8.8.0")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21")
+}
+
+gradlePlugin {
+    plugins {
+        create("setupApp") {
+            id = "com.exclave.setup"
+            implementationClass = "SetupAppPlugin"
+        }
+    }
 }
