@@ -1,6 +1,6 @@
 [versions]
 # ─── Build Tools ───
-android-gradle-plugin = "8.8.0"
+android-gradle-plugin = "8.13.0"          # ← Updated
 kotlin-gradle-plugin = "2.0.21"
 ksp = "2.0.21-1.0.28"
 protobuf = "0.10.0"
