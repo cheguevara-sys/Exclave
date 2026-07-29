@@ -1,37 +1,40 @@
-/******************************************************************************
- *                                                                            *
- * Copyright (C) 2025  dyhkwong                                               *
- *                                                                            *
- * This program is free software: you can redistribute it and/or modify       *
- * it under the terms of the GNU General Public License as published by       *
- * the Free Software Foundation, either version 3 of the License, or          *
- *  (at your option) any later version.                                       *
- *                                                                            *
- * This program is distributed in the hope that it will be useful,            *
- * but WITHOUT ANY WARRANTY; without even the implied warranty of             *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the              *
- * GNU General Public License for more details.                               *
- *                                                                            *
- * You should have received a copy of the GNU General Public License          *
- * along with this program. If not, see <https://www.gnu.org/licenses/>.      *
- *                                                                            *
- ******************************************************************************/
+package io.nekohasekai.sagernet.fmt
 
-package io.nekohasekai.sagernet.fmt.ssh
+// ... existing imports ...
+import com.github.shadowssocks.injector.SshInjector
+import com.github.shadowssocks.injector.PreconnectedSocketFactory
+import com.jcraft.jsch.JSch
 
-import libexclavecore.Libexclavecore
+class SSSHFmt {
+    // ... existing code ...
 
-fun parseSSH(link: String): SSHBean {
-    // Warning: no public key pinning is insecure!
-    val url = Libexclavecore.parseURL(link)
-    return SSHBean().apply {
-        serverAddress = url.host.ifEmpty { error("empty host") }
-        serverPort = url.port.takeIf { it > 0 } ?: 22
-        username = url.username
-        password = url.password
-        name = url.fragment
-        if (url.password.isNotEmpty()) {
-            authType = SSHBean.AUTH_TYPE_PASSWORD
+    // Your existing connect() method
+    private fun connect(bean: SSSHBean) {
+        // 1. Check if payload is enabled
+        if (bean.usePayload && bean.payload.isNotEmpty()) {
+            // 2. Inject payload through remote proxy
+            val injector = SshInjector()
+            val socket = injector.connectWithPayload(
+                proxyHost = bean.remoteProxy,      // From UI: e.g., "viton.com"
+                proxyPort = bean.remoteProxyPort,  // From UI: e.g., 80
+                sshHost = bean.serverAddress,
+                sshPort = bean.serverPort,
+                payloadTemplate = bean.payload
+            )
+
+            if (socket != null) {
+                // 3. Use the socket for SSH
+                val jsch = JSch()
+                val session = jsch.getSession(bean.username, bean.serverAddress, bean.serverPort)
+                session.setSocketFactory(PreconnectedSocketFactory(socket))
+                session.setPassword(bean.password)
+                session.connect()
+                // ... rest of SSH setup ...
+                return
+            }
         }
+
+        // 4. Fallback: Normal SSH connection (without payload)
+        // ... existing SSH connection code ...
     }
 }
