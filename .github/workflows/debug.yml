@@ -22,30 +22,20 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.26'
+          go-version: '1.21'
 
-      - name: Set up Android SDK
+      - name: Set up Android NDK
         run: |
-          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
-          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/tools/bin:$ANDROID_SDK_ROOT/platform-tools:$PATH
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "build-tools;34.0.0" "platforms;android-34"
-
-      - name: Set up Android NDK r29
-        run: |
-          wget -q https://dl.google.com/android/repository/android-ndk-r29-linux.zip
-          unzip -q android-ndk-r29-linux.zip
-          echo "ANDROID_NDK_HOME=$GITHUB_WORKSPACE/android-ndk-r29" >> $GITHUB_ENV
-          echo "$GITHUB_WORKSPACE/android-ndk-r29" >> $GITHUB_PATH
-
-      - name: Fix Go dependencies
-        run: |
-          if [ -f "go.mod" ]; then
-            go mod tidy || true
-          fi
+          wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
+          unzip -q android-ndk-r25c-linux.zip
+          echo "ANDROID_NDK_HOME=$GITHUB_WORKSPACE/android-ndk-r25c" >> $GITHUB_ENV
+          echo "$GITHUB_WORKSPACE/android-ndk-r25c" >> $GITHUB_PATH
 
       - name: Make gradlew executable
         run: chmod +x gradlew
@@ -55,15 +45,8 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build Debug APK
+      - name: Build Debug APK (with full error output)
         run: ./gradlew :app:assembleDebug --no-daemon --stacktrace --info
-
-      - name: Upload Gradle problem report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-problems-report
-          path: build/reports/problems/problems-report.html
 
       - name: Upload Debug APK
         if: success()
