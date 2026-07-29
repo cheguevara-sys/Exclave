@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("kotlin-android")         // ← Added
     id("kotlin-parcelize")
     alias(libs.plugins.protobuf)
     alias(libs.plugins.ksp)
@@ -10,12 +11,12 @@ setupApp()
 
 android {
     namespace = "io.nekohasekai.sagernet"
-    
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    
+
     kotlinOptions {
         jvmTarget = "17"
     }
@@ -70,9 +71,12 @@ dependencies {
     implementation(libs.recyclerview.fastscroll)
     implementation(libs.editorkit)
     implementation(libs.editorkit.language.json)
-    
+
+    // Protobuf
+    implementation("com.google.protobuf:protobuf-javalite:3.25.3")
+
     // JSch for SSH tunneling
     implementation("com.jcraft:jsch:0.1.55")
-    
+
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
