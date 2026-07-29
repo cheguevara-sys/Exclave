@@ -59,7 +59,7 @@ dependencies {
     implementation(libs.jini.lib)
     implementation(libs.markwon.core)
     implementation(libs.recyclerview.fastscroll)
-implementation 'com.jcraft:jsch:0.1.55'{
+implementation 'com.jcraft:jsch:0.1.55'
         exclude(group = "androidx.recyclerview")
         exclude(group = "androidx.appcompat")
     }
