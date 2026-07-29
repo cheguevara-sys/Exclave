@@ -1,6 +1,6 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")         // ← Added
+    // id("kotlin-android")   // ← REMOVED (no longer needed)
     id("kotlin-parcelize")
     alias(libs.plugins.protobuf)
     alias(libs.plugins.ksp)
@@ -17,7 +17,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
+    kotlinOptions {                     // ← This still works without the plugin
         jvmTarget = "17"
     }
 }
