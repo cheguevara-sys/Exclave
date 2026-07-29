@@ -57,22 +57,31 @@ jobs:
 
       - name: Build all Debug APKs
         run: |
-          echo "Building all debug variants..."
-          ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee build-output.log
+          echo "Building OSS debug variant..."
+          ./gradlew :app:assembleOssDebug --no-daemon --stacktrace --info 2>&1 | tee build-output.log
+          echo ""
+          echo "Building GMS debug variant..."
+          ./gradlew :app:assembleGmsDebug --no-daemon --stacktrace --info 2>&1 | tee -a build-output.log
 
-      - name: Find all APK files
+      - name: Find APK files
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 ALL APK FILES FOUND"
+          echo "🔍 SEARCHING FOR APK FILES"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+          find . -name "*.apk" -type f 2>/dev/null
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📁 CHECKING FLAVOR PATHS"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          ls -la app/build/outputs/apk/oss/debug/ 2>/dev/null || echo "No OSS debug APK"
+          ls -la app/build/outputs/apk/gms/debug/ 2>/dev/null || echo "No GMS debug APK"
 
-      - name: Upload ALL APKs
+      - name: Upload APKs
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Guevarah-VPN-All-APKs
+          name: Guevarah-VPN
           path: |
-            **/build/outputs/apk/**/debug/*.apk
-            **/build/outputs/apk/**/*.apk
-            *.apk
+            app/build/outputs/apk/*/debug/*.apk
+            app/build/outputs/apk/**/debug/*.apk
+            **/build/outputs/apk/*/debug/*.apk
