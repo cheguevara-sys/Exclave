@@ -1,5 +1,6 @@
 plugins {
     id("com.android.library")
+    id("kotlin-android")
 }
 
 android {
@@ -22,5 +23,7 @@ android {
 }
 
 dependencies {
-    // Add any needed dependencies here
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.0.21")
+    implementation("androidx.annotation:annotation:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 }
