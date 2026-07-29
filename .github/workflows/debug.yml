@@ -55,33 +55,32 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build all Debug APKs
-        run: |
-          echo "Building OSS debug variant..."
-          ./gradlew :app:assembleOssDebug --no-daemon --stacktrace --info 2>&1 | tee build-output.log
-          echo ""
-          echo "Building GMS debug variant..."
-          ./gradlew :app:assembleGmsDebug --no-daemon --stacktrace --info 2>&1 | tee -a build-output.log
+      - name: List all Gradle tasks (to discover available assemble tasks)
+        run: ./gradlew tasks --all --no-daemon | grep -i assemble || echo "No assemble tasks found"
 
-      - name: Find APK files
+      - name: Build all debug APKs
+        run: ./gradlew assembleDebug --no-daemon --stacktrace --info
+
+      - name: Find and list all APK files
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 SEARCHING FOR APK FILES"
+          echo "🔍 SEARCHING FOR ALL APK FILES"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           find . -name "*.apk" -type f 2>/dev/null
           echo ""
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📁 CHECKING FLAVOR PATHS"
+          echo "📁 DETAILED APK PATHS"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          ls -la app/build/outputs/apk/oss/debug/ 2>/dev/null || echo "No OSS debug APK"
-          ls -la app/build/outputs/apk/gms/debug/ 2>/dev/null || echo "No GMS debug APK"
+          find . -path "*/build/outputs/apk/*" -name "*.apk" -type f 2>/dev/null | while read f; do
+            echo "APK: $f"
+            ls -lh "$f"
+          done
 
-      - name: Upload APKs
+      - name: Upload all found APKs
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Guevarah-VPN
+          name: Guevarah-VPN-All-APKs
           path: |
-            app/build/outputs/apk/*/debug/*.apk
-            app/build/outputs/apk/**/debug/*.apk
-            **/build/outputs/apk/*/debug/*.apk
+            **/build/outputs/apk/**/*.apk
+            *.apk
