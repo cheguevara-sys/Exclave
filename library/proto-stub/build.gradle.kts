@@ -1,35 +1,24 @@
-import com.google.protobuf.gradle.*
-
 plugins {
     id("com.android.library")
-    alias(libs.plugins.protobuf)
+    id("kotlin-android")
 }
 
-setupCommon()
+android {
+    namespace = "io.nekohasekai.sagernet.proto"
+    compileSdk = 34
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+// setupCommon()   // ← Commented out (or define it above)
 
 dependencies {
-    protobuf(project(":library:proto"))
-
-    api(libs.protobuf.java)
-}
-android {
-    namespace = "com.github.exclavenetwork.exclave.core"
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-        }
-    }
-}
-
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:4.35.1"
-    }
-    generateProtoTasks {
-        all().forEach {
-            it.plugins {
-                create("java")
-            }
-        }
-    }
+    implementation("com.google.protobuf:protobuf-javalite:3.25.3")
 }
