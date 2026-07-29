@@ -45,7 +45,7 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build Debug APK (with full error output)
+      - name: Build Debug APK
         run: ./gradlew :app:assembleDebug --no-daemon --stacktrace --info
 
       - name: Upload Debug APK
@@ -54,3 +54,10 @@ jobs:
         with:
           name: Guevarah-VPN
           path: app/build/outputs/apk/debug/*.apk
+
+      - name: Upload Gradle problem report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-problems-report
+          path: build/reports/problems/problems-report.html
