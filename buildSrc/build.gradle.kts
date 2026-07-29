@@ -1,6 +1,6 @@
 plugins {
-    id("java-gradle-plugin")
-    id("kotlin-dsl")
+    `java-gradle-plugin`
+    `kotlin-dsl`
 }
 
 repositories {
