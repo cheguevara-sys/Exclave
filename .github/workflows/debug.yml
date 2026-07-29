@@ -25,6 +25,19 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Install Android SDK platform and build-tools
+        run: |
+          COMPILE_SDK=34
+          BUILD_TOOLS_VER=34.0.0
+
+          export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
+          mkdir -p "$ANDROID_SDK_ROOT"
+
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --install "platform-tools" "platforms;android-${COMPILE_SDK}" "build-tools;${BUILD_TOOLS_VER}"
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses || true
+
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -33,7 +46,7 @@ jobs:
       - name: Set up Android NDK
         run: |
           wget -q https://dl.google.com/android/repository/android-ndk-r25c-linux.zip
-          unzip -q android-ndk-r25c-linux.zip
+          unzip -q -o android-ndk-r25c-linux.zip -d android-ndk-r25c
           echo "ANDROID_NDK_HOME=$GITHUB_WORKSPACE/android-ndk-r25c" >> $GITHUB_ENV
           echo "$GITHUB_WORKSPACE/android-ndk-r25c" >> $GITHUB_PATH
 
@@ -45,8 +58,30 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace --info
+      - name: Build Debug APK (with full error output)
+        run: |
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace --info 2>&1 | tee build-output.log
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "If the build failed, search for 'e:' or 'FAILURE:' above in the logs to find the error."
+          echo "The error will be near the bottom of the log output."
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+      - name: Print Kotlin compilation errors (if any)
+        if: failure()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 SEARCHING FOR KOTLIN COMPILATION ERRORS (e: lines)"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          grep -n "e:" build-output.log || echo "No 'e:' errors found. Check the full log above for the failure cause."
+
+      - name: Print failure summary
+        if: failure()
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 SEARCHING FOR FAILURE MESSAGE"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          grep -A 10 "FAILURE:" build-output.log || echo "No 'FAILURE:' message found."
+          grep -A 10 "What went wrong:" build-output.log || echo "No 'What went wrong:' message found."
 
       - name: Upload Debug APK
         if: success()
@@ -54,10 +89,3 @@ jobs:
         with:
           name: Guevarah-VPN
           path: app/build/outputs/apk/debug/*.apk
-
-      - name: Upload Gradle problem report
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: gradle-problems-report
-          path: build/reports/problems/problems-report.html
