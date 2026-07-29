@@ -58,34 +58,48 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build Debug APK (with full error output)
+      - name: Find all APK locations
         run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔍 SEARCHING FOR APK FILES"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+
+      - name: Build Debug APK
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "🔨 BUILDING DEBUG APK"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           ./gradlew :app:assembleDebug --no-daemon --stacktrace --info 2>&1 | tee build-output.log
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "If the build failed, search for 'e:' or 'FAILURE:' above in the logs to find the error."
-          echo "The error will be near the bottom of the log output."
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-      - name: Print Kotlin compilation errors (if any)
-        if: failure()
+      - name: Print build result
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 SEARCHING FOR KOTLIN COMPILATION ERRORS (e: lines)"
+          echo "📊 BUILD RESULT"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          grep -n "e:" build-output.log || echo "No 'e:' errors found. Check the full log above for the failure cause."
+          grep -i "BUILD SUCCESSFUL\|BUILD FAILED" build-output.log || echo "Build result not found"
 
-      - name: Print failure summary
-        if: failure()
+      - name: Find APK files after build
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 SEARCHING FOR FAILURE MESSAGE"
+          echo "🔍 SEARCHING FOR APK FILES AFTER BUILD"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          grep -A 10 "FAILURE:" build-output.log || echo "No 'FAILURE:' message found."
-          grep -A 10 "What went wrong:" build-output.log || echo "No 'What went wrong:' message found."
+          find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📁 CHECKING STANDARD APK PATHS"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          ls -la app/build/outputs/apk/debug/ 2>/dev/null || echo "No APK at app/build/outputs/apk/debug/"
+          ls -la app/build/outputs/apk/*/debug/ 2>/dev/null || echo "No APK at app/build/outputs/apk/*/debug/"
+          ls -la androidApp/build/outputs/apk/debug/ 2>/dev/null || echo "No APK at androidApp/build/outputs/apk/debug/"
 
       - name: Upload Debug APK
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Guevarah-VPN
-          path: app/build/outputs/apk/debug/*.apk
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/*/debug/*.apk
+            androidApp/build/outputs/apk/debug/*.apk
+            **/build/outputs/apk/debug/*.apk
