@@ -29,13 +29,10 @@ jobs:
         run: |
           COMPILE_SDK=34
           BUILD_TOOLS_VER=34.0.0
-
           export ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
           mkdir -p "$ANDROID_SDK_ROOT"
-
           yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --install "platform-tools" "platforms;android-${COMPILE_SDK}" "build-tools;${BUILD_TOOLS_VER}"
           yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses || true
-
           echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
 
       - name: Set up Go
@@ -58,43 +55,24 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace --info 2>&1 | tee build-output.log
+      - name: Build all Debug APKs
+        run: |
+          echo "Building all debug variants..."
+          ./gradlew assembleDebug --no-daemon --stacktrace --info 2>&1 | tee build-output.log
 
-      - name: Find actual APK location
+      - name: Find all APK files
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 SEARCHING FOR APK FILES"
+          echo "🔍 ALL APK FILES FOUND"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           find . -name "*.apk" -type f 2>/dev/null || echo "No APK files found"
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📁 CHECKING COMMON PATHS"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          ls -la app/build/outputs/apk/ 2>/dev/null || echo "No app/apk directory"
-          ls -la androidApp/build/outputs/apk/ 2>/dev/null || echo "No androidApp/apk directory"
-          echo ""
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "📁 CHECKING OUTPUT DIRECTORY STRUCTURE"
-          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          find . -type d -path "*/outputs/apk/*" 2>/dev/null | head -20 || echo "No outputs/apk directories found"
 
-      - name: Check if APK was generated
-        run: |
-          if find . -name "*.apk" -type f | grep -q .; then
-            echo "✅ APK FOUND!"
-            find . -name "*.apk" -type f
-          else
-            echo "❌ NO APK FOUND — The build may have a different module or task name."
-            echo "Check the build log above for 'assembleDebug' and look for the actual task that ran."
-          fi
-
-      - name: Upload Debug APK
+      - name: Upload ALL APKs
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Guevarah-VPN
+          name: Guevarah-VPN-All-APKs
           path: |
-            **/build/outputs/apk/debug/*.apk
             **/build/outputs/apk/**/debug/*.apk
+            **/build/outputs/apk/**/*.apk
             *.apk
