@@ -17,7 +17,7 @@ android {
     }
 }
 
-// setupCommon()   // ← Commented out (or define it above)
+// setupCommon()   // ← Commented out (this was causing the error)
 
 dependencies {
     implementation("com.google.protobuf:protobuf-javalite:3.25.3")
