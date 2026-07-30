@@ -2,8 +2,10 @@ name: Guevarah VPN Debug Build
 
 on:
   push:
-    branches: [ dev, main ]
-  workflow_dispatch:
+    branches: [ dev ]          # ← Changed from 'master' to 'dev'
+  pull_request:
+    branches: [ dev ]          # ← Changed from 'master' to 'dev'
+  workflow_dispatch:           # Allows manual trigger from any branch
 
 jobs:
   build:
