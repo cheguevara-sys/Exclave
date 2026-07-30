@@ -55,11 +55,42 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build OSS Debug APK
-        run: ./gradlew :app:assembleOssDebug --no-daemon --stacktrace --info
-
-      - name: Build GMS Debug APK
-        run: ./gradlew :app:assembleGmsDebug --no-daemon --stacktrace --info
+      - name: Build APK variants (safe)
+        run: |
+          set -euo pipefail
+          TASK_OUTPUT=$(./gradlew :app:tasks --all --console=plain 2>/dev/null || true)
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "📋 Available assemble tasks"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "$TASK_OUTPUT" | grep -i assemble | grep -v "tasks" || echo "No assemble tasks found"
+          echo ""
+          
+          run_if_exists() {
+            local t=$1
+            if echo "$TASK_OUTPUT" | grep -q "$t"; then
+              echo "✅ Running Gradle task: $t"
+              ./gradlew ":app:$t" --no-daemon --stacktrace --info
+              return 0
+            else
+              echo "⏭️ Task not found: $t"
+              return 1
+            fi
+          }
+          
+          # Try flavor-specific tasks first
+          run_if_exists assembleOssDebug || true
+          run_if_exists assembleGmsDebug || true
+          
+          # Fallback to plain assembleDebug
+          if echo "$TASK_OUTPUT" | grep -q "assembleDebug"; then
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "✅ Running fallback: assembleDebug"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            ./gradlew :app:assembleDebug --no-daemon --stacktrace --info
+          else
+            echo "❌ No assemble tasks found!"
+            exit 1
+          fi
 
       - name: Find and list all APK files
         run: |
@@ -82,6 +113,7 @@ jobs:
         with:
           name: Guevarah-VPN
           path: |
+            app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/*/debug/*.apk
             app/build/outputs/apk/**/debug/*.apk
             **/build/outputs/apk/*/debug/*.apk
