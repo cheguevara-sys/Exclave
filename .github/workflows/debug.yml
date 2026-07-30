@@ -2,7 +2,7 @@ name: Guevarah VPN Debug Build
 
 on:
   push:
-    branches: [ dev ]          # ← Changed from 'master' to 'dev'
+    branches: [ dev ]
   workflow_dispatch:
 
 jobs:
