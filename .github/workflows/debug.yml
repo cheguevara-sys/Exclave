@@ -2,7 +2,7 @@ name: Guevarah VPN Debug Build
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ main, dev ]
   workflow_dispatch:
 
 jobs:
@@ -50,18 +50,16 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Ensure app/libs exists
-        run: |
-          mkdir -p app/libs
-          touch app/libs/.gitkeep
-
       - name: Generate debug keystore
         run: |
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace --info
+      - name: Build OSS Debug APK
+        run: ./gradlew :app:assembleOssDebug --no-daemon --stacktrace --info
+
+      - name: Build GMS Debug APK
+        run: ./gradlew :app:assembleGmsDebug --no-daemon --stacktrace --info
 
       - name: Find and list all APK files
         run: |
@@ -84,7 +82,6 @@ jobs:
         with:
           name: Guevarah-VPN
           path: |
-            app/build/outputs/apk/debug/*.apk
             app/build/outputs/apk/*/debug/*.apk
             app/build/outputs/apk/**/debug/*.apk
             **/build/outputs/apk/*/debug/*.apk
