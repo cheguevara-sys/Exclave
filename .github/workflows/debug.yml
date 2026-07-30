@@ -50,6 +50,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      - name: Ensure app/libs exists
+        run: |
+          mkdir -p app/libs
+          touch app/libs/.gitkeep
+
       - name: Generate debug keystore
         run: |
           mkdir -p ~/.android
