@@ -55,16 +55,16 @@ jobs:
           mkdir -p ~/.android
           keytool -genkey -v -keystore ~/.android/debug.keystore -alias androiddebugkey -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=Android Debug, O=Android, C=US"
 
-      - name: List all Gradle tasks (to discover available assemble tasks)
-        run: ./gradlew tasks --all --no-daemon | grep -i assemble || echo "No assemble tasks found"
+      - name: Build OSS Debug APK
+        run: ./gradlew :app:assembleOssDebug --no-daemon --stacktrace --info
 
-      - name: Build all debug APKs
-        run: ./gradlew assembleDebug --no-daemon --stacktrace --info
+      - name: Build GMS Debug APK
+        run: ./gradlew :app:assembleGmsDebug --no-daemon --stacktrace --info
 
       - name: Find and list all APK files
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-          echo "🔍 SEARCHING FOR ALL APK FILES"
+          echo "🔍 SEARCHING FOR APK FILES"
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           find . -name "*.apk" -type f 2>/dev/null
           echo ""
@@ -80,7 +80,8 @@ jobs:
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: Guevarah-VPN-All-APKs
+          name: Guevarah-VPN
           path: |
-            **/build/outputs/apk/**/*.apk
-            *.apk
+            app/build/outputs/apk/*/debug/*.apk
+            app/build/outputs/apk/**/debug/*.apk
+            **/build/outputs/apk/*/debug/*.apk
